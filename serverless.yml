@@ -2,9 +2,6 @@
 
 service: serverless-express-rest-api
 
-custom:
-  tableName: 'users-table-${self:provider.stage}'
-
 provider:
   name: aws
   runtime: nodejs6.10
@@ -30,7 +27,14 @@ functions:
     events:
       - http: ANY /
       - http: 'ANY {proxy+}'
-
+  getUser:
+    handler: index.handler
+    events:
+      - http: 'GET /users/{proxy+}'
+  createUser:
+    handler: index.handler
+    events:
+      - http: 'POST /users'
 resources:
   Resources:
     UsersDynamoDBTable:
@@ -46,3 +50,13 @@ resources:
           ReadCapacityUnits: 1
           WriteCapacityUnits: 1
         TableName: ${self:custom.tableName}
+
+plugins:
+  - serverless-dynamodb-local
+  - serverless-offline #serverless-offline needs to be last in the list
+
+custom:
+  tableName: 'users-table-${self:provider.stage}'
+  dynamodb:
+    start:
+      migrate: true
